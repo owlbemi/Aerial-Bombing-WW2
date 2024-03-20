@@ -1,0 +1,1061 @@
+---
+title: "Untitled"
+author: "Jake Lee"
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include=FALSE}
+options(tinytex.verbose = TRUE)
+```
+
+```{r fig.showtext = TRUE}
+##############################################################################
+######################### INTSALL/LOAD PACKAGES ##############################
+##############################################################################
+
+install.packages("extrafont")
+install.packages("geosphere")
+install.packages("plotly")
+
+library(ggplot2)
+library(scales)
+library(extrafont)
+library(geosphere)
+library(maps)
+library(dplyr)
+library(leaflet)
+library(plotly)
+
+font_import()
+loadfonts(device = "win")
+
+
+##############################################################################
+############################## CLEAN DATA ####################################
+##############################################################################
+
+
+# Change name of Altitude
+names(operations)[names(operations) == "Altitude..Hundreds.of.Feet."] <- "Altitude.Hundreds.of.Feet"
+
+# Order data set by date
+operations <- operations[order(as.Date(operations$Mission.Date, format="%m/%d/%Y")),]
+
+substrRight <- function(x, n){
+  substr(x, nchar(x)-n+1, nchar(x))
+}
+
+# Add Year variable
+Year <- substrRight(operations$Mission.Date, 4)
+operations <- cbind(Year, operations)
+
+# Add Month variable
+Month <- substr(operations$Mission.Date, 1, 1) 
+operations <- cbind(Month, operations)
+
+
+
+###############################################################################
+########################## PROGRESSION OF THE WAR #############################
+###############################################################################
+
+# -----------------------------------------------------------------------------
+# Make stacked area graph for top 5 bombed cities
+
+
+# Berlin
+data.BERL <- subset(operations, Target.City == "BERLIN")
+data.BERL.39 <- subset(data.BERL, Year == 1939)
+data.BERL.40 <- subset(data.BERL, Year == 1940)
+data.BERL.41 <- subset(data.BERL, Year == 1941)
+data.BERL.42 <- subset(data.BERL, Year == 1942)
+data.BERL.43 <- subset(data.BERL, Year == 1943)
+data.BERL.44 <- subset(data.BERL, Year == 1944)
+data.BERL.45 <- subset(data.BERL, Year == 1945)
+
+nrow(data.BERL)
+BERL.39 <- nrow(data.BERL.39)
+BERL.40 <- nrow(data.BERL.40)
+BERL.41 <- nrow(data.BERL.41)
+BERL.42 <- nrow(data.BERL.42)
+BERL.43 <- nrow(data.BERL.43)
+BERL.44 <- nrow(data.BERL.44)
+BERL.45 <- nrow(data.BERL.45)
+
+
+# Hamburg
+data.HAMB <- subset(operations, Target.City == "HAMBURG")
+data.HAMB.39 <- subset(data.HAMB, Year == 1939)
+data.HAMB.40 <- subset(data.HAMB, Year == 1940)
+data.HAMB.41 <- subset(data.HAMB, Year == 1941)
+data.HAMB.42 <- subset(data.HAMB, Year == 1942)
+data.HAMB.43 <- subset(data.HAMB, Year == 1943)
+data.HAMB.44 <- subset(data.HAMB, Year == 1944)
+data.HAMB.45 <- subset(data.HAMB, Year == 1945)
+
+HAMB.39 <- nrow(data.HAMB.39)
+HAMB.40 <- nrow(data.HAMB.40)
+HAMB.41 <- nrow(data.HAMB.41)
+HAMB.42 <- nrow(data.HAMB.42)
+HAMB.43 <- nrow(data.HAMB.43)
+HAMB.44 <- nrow(data.HAMB.44)
+HAMB.45 <- nrow(data.HAMB.45)
+
+
+# Cologne
+data.COLO <- subset(operations, Target.City == "COLOGNE")
+data.COLO.39 <- subset(data.COLO, Year == 1939)
+data.COLO.40 <- subset(data.COLO, Year == 1940)
+data.COLO.41 <- subset(data.COLO, Year == 1941)
+data.COLO.42 <- subset(data.COLO, Year == 1942)
+data.COLO.43 <- subset(data.COLO, Year == 1943)
+data.COLO.44 <- subset(data.COLO, Year == 1944)
+data.COLO.45 <- subset(data.COLO, Year == 1945)
+
+COLO.39 <- nrow(data.COLO.39)
+COLO.40 <- nrow(data.COLO.40)
+COLO.41 <- nrow(data.COLO.41)
+COLO.42 <- nrow(data.COLO.42)
+COLO.43 <- nrow(data.COLO.43)
+COLO.44 <- nrow(data.COLO.44)
+COLO.45 <- nrow(data.COLO.45)
+
+
+# Bremen
+data.BREM <- subset(operations, Target.City == "BREMEN")
+data.BREM.39 <- subset(data.BREM, Year == 1939)
+data.BREM.40 <- subset(data.BREM, Year == 1940)
+data.BREM.41 <- subset(data.BREM, Year == 1941)
+data.BREM.42 <- subset(data.BREM, Year == 1942)
+data.BREM.43 <- subset(data.BREM, Year == 1943)
+data.BREM.44 <- subset(data.BREM, Year == 1944)
+data.BREM.45 <- subset(data.BREM, Year == 1945)
+
+BREM.39 <- nrow(data.BREM.39)
+BREM.40 <- nrow(data.BREM.40)
+BREM.41 <- nrow(data.BREM.41)
+BREM.42 <- nrow(data.BREM.42)
+BREM.43 <- nrow(data.BREM.43)
+BREM.44 <- nrow(data.BREM.44)
+BREM.45 <- nrow(data.BREM.45)
+
+
+# Kiel
+data.KIEL <- subset(operations, Target.City == "KIEL")
+data.KIEL.39 <- subset(data.KIEL, Year == 1939)
+data.KIEL.40 <- subset(data.KIEL, Year == 1940)
+data.KIEL.41 <- subset(data.KIEL, Year == 1941)
+data.KIEL.42 <- subset(data.KIEL, Year == 1942)
+data.KIEL.43 <- subset(data.KIEL, Year == 1943)
+data.KIEL.44 <- subset(data.KIEL, Year == 1944)
+data.KIEL.45 <- subset(data.KIEL, Year == 1945)
+
+KIEL.39 <- nrow(data.KIEL.39)
+KIEL.40 <- nrow(data.KIEL.40)
+KIEL.41 <- nrow(data.KIEL.41)
+KIEL.42 <- nrow(data.KIEL.42)
+KIEL.43 <- nrow(data.KIEL.43)
+KIEL.44 <- nrow(data.KIEL.44)
+KIEL.45 <- nrow(data.KIEL.45)
+
+# ----------------------------------------------------------------------------
+# Create graph data
+
+YEAR.C <- as.numeric(c(rep(1939, 5), rep(1940, 5), rep(1941, 5), rep(1942, 5), rep(1943, 5), 
+                     rep(1944, 5), rep(1945, 5)))
+BOMBINGS.C <- c(BERL.39, HAMB.39, COLO.39, BREM.39, KIEL.39,
+              BERL.40, HAMB.40, COLO.40, BREM.40, KIEL.40,
+              BERL.41, HAMB.41, COLO.41, BREM.41, KIEL.41,
+              BERL.42, HAMB.42, COLO.42, BREM.42, KIEL.42,
+              BERL.43, HAMB.43, COLO.43, BREM.43, KIEL.43,
+              BERL.44, HAMB.44, COLO.44, BREM.44, KIEL.44,
+              BERL.45, HAMB.45, COLO.45, BREM.45, KIEL.45)
+CITY <- rep(c("BERLIN", "HAMBURG", "COLOGNE", "BREMEN", "KIEL"), 7)
+data.stacked.C <- data.frame(YEAR.C, BOMBINGS.C, CITY)
+data.stacked.C$CITY <- factor(data.stacked.C$CITY, 
+                               levels=c("BERLIN", "HAMBURG", "COLOGNE",
+                                        "BREMEN", "KIEL"))
+
+# ----------------------------------------------------------------------------
+# Plot the graph
+
+ggplot(data.stacked.C, aes(x = YEAR.C, y = BOMBINGS.C, fill = CITY)) + 
+  geom_area(alpha = 0.7, size = 1, colour = "black") +
+  theme(text=element_text(size=16,  family = "Oswald")) +
+  labs(x = "YEAR",
+       y = "NUMBER OF BOMBINGS", 
+       title = "NUMBER OF BOMBINGS EACH YEAR IN TOP FIVE BOMBED CITIES")
+
+
+
+
+# ----------------------------------------------------------------------------
+# Make stacked area graph for top 3 bombed countries
+
+
+# Germany
+data.GERM <- subset(operations, Target.Country == "GERMANY")
+data.GERM.39 <- subset(data.GERM, Year == 1939)
+data.GERM.40 <- subset(data.GERM, Year == 1940)
+data.GERM.41 <- subset(data.GERM, Year == 1941)
+data.GERM.42 <- subset(data.GERM, Year == 1942)
+data.GERM.43 <- subset(data.GERM, Year == 1943)
+data.GERM.44 <- subset(data.GERM, Year == 1944)
+data.GERM.45 <- subset(data.GERM, Year == 1945)
+
+nrow(data.GERM)
+G.39 <- nrow(data.GERM.39)
+G.40 <- nrow(data.GERM.40)
+G.41 <- nrow(data.GERM.41)
+G.42 <- nrow(data.GERM.42)
+G.43 <- nrow(data.GERM.43)
+G.44 <- nrow(data.GERM.44)
+G.45 <- nrow(data.GERM.45)
+
+
+# Italy
+data.IT <- subset(operations, Target.Country == "ITALY")
+data.IT.39 <- subset(data.IT, Year == 1939)
+data.IT.40 <- subset(data.IT, Year == 1940)
+data.IT.41 <- subset(data.IT, Year == 1941)
+data.IT.42 <- subset(data.IT, Year == 1942)
+data.IT.43 <- subset(data.IT, Year == 1943)
+data.IT.44 <- subset(data.IT, Year == 1944)
+data.IT.45 <- subset(data.IT, Year == 1945)
+
+nrow(data.IT)
+I.39 <- nrow(data.IT.39)
+I.40 <- nrow(data.IT.40)
+I.41 <- nrow(data.IT.41)
+I.42 <- nrow(data.IT.42)
+I.43 <- nrow(data.IT.43)
+I.44 <- nrow(data.IT.44)
+I.45 <- nrow(data.IT.45)
+
+
+# France
+data.FRAN <- subset(operations, Target.Country == "FRANCE")
+data.FRAN.39 <- subset(data.FRAN, Year == 1939)
+data.FRAN.40 <- subset(data.FRAN, Year == 1940)
+data.FRAN.41 <- subset(data.FRAN, Year == 1941)
+data.FRAN.42 <- subset(data.FRAN, Year == 1942)
+data.FRAN.43 <- subset(data.FRAN, Year == 1943)
+data.FRAN.44 <- subset(data.FRAN, Year == 1944)
+data.FRAN.45 <- subset(data.FRAN, Year == 1945)
+
+nrow(data.FRAN)
+F.39 <- nrow(data.FRAN.39)
+F.40 <- nrow(data.FRAN.40)
+F.41 <- nrow(data.FRAN.41)
+F.42 <- nrow(data.FRAN.42)
+F.43 <- nrow(data.FRAN.43)
+F.44 <- nrow(data.FRAN.44)
+F.45 <- nrow(data.FRAN.45)
+
+
+# ----------------------------------------------------------------------------
+# Create graph data
+
+
+YEAR <- as.numeric(c(rep(1939, 3), rep(1940, 3), rep(1941, 3), rep(1942, 3), rep(1943, 3), 
+          rep(1944, 3), rep(1945, 3)))
+BOMBINGS <- c(G.39, I.39, F.39, G.40, I.40, F.40, G.41, I.41, F.41, G.42, I.42, F.42,
+              G.43, I.43, F.43, G.44, I.44, F.44, G.45, I.45, F.45)
+COUNTRY <- rep(c("GERMANY", "ITALY", "FRANCE"), 7)
+data.stacked <- data.frame(YEAR, BOMBINGS, COUNTRY)
+data.stacked$COUNTRY <- factor(data.stacked$COUNTRY, 
+                               levels=c("GERMANY", "ITALY", "FRANCE"))
+
+
+# ----------------------------------------------------------------------------
+# Plot the graph
+
+
+ggplot(data.stacked, aes(x = YEAR, y = BOMBINGS, fill = COUNTRY)) + 
+  geom_area(alpha = 0.7, size = 1, colour = "black") +
+  theme(text=element_text(size=16,  family = "Oswald")) +
+  labs(x = "YEAR",
+       y = "NUMBER OF BOMBINGS", 
+       title = "NUMBER OF BOMBINGS EACH YEAR IN TOP THREE BOMBED COUNTRIES") +
+  scale_fill_manual(values = c("red3","green3","blue"))
+
+
+
+# ----------------------------------------------------------------------------
+# What percent of French bombings took place during June, July, 
+# and August (Battle of Normandy)?
+
+
+data.FRAN.44.DD <- subset(data.FRAN.44, Month == "6" | Month == "7" | Month == "8")
+View(data.FRAN.44.DD)
+percent.DD <- nrow(data.FRAN.44.DD) / F.44
+percent.DD
+
+# 68.56% of bombings in France took place between June and August, during the 
+# Battle of Normandy.
+# Check to see if city most bombed was close to Normandy
+
+
+# -----------------------------------------------------------------------------
+# Most attacked city: St. Lo (404), which was bombed and attacked in July after the 
+# invasion of Normandy. St. Lo was also the second most attacked city in France
+# during all of 1944. It was second only to Brest, which had 459 bombings.
+
+# View St. Lo
+View(table(data.FRAN.44.DD$Target.City)[which(table(data.FRAN.44.DD$Target.City) 
+                                              == max(table(data.FRAN.44.DD$Target.City)))])
+max(table(data.FRAN.44.DD$Target.City))
+
+# View Brest
+View(table(data.FRAN.44$Target.City)[which(table(data.FRAN.44$Target.City) 
+                                              == max(table(data.FRAN.44$Target.City)))])
+
+
+
+
+
+##############################################################################
+################# GROUPED BAR PLOT FOR NUMBER OF BOMBING AIRCRAFT ############
+##############################################################################
+
+# ----------------------------------------------------------------------------
+# Identify top 5 aircraft series, target industries
+
+# Top 5 Aircraft Series Table
+table.as <- table(operations$Aircraft.Series)
+table.top.5.as <- data.frame(table.as[which(table.as >= 10000)])
+View(table.top.5.as)
+
+# Top 5 Target Industry Table
+table.ti <- table(operations$Target.Industry)
+table.top.5.ti <- data.frame(table.ti[which(table.ti >= 5000)])
+View(table.top.5.ti)
+
+
+
+# ---------------------------------------------------------------------------
+# Clean data
+# Create data set variables
+
+
+data.ti <- subset(operations,
+                  Airborne.Aircraft != "")
+data.ti.RR <- subset(data.ti, Target.Industry == '"RR INSTALLATIONS,  TRACKS,  MARSHALLING YARDS,  AND STATIONS"')
+data.ti.AIR <- subset(data.ti, Target.Industry == "AIR FIELDS AND AIRDROMES")
+data.ti.BRIDGES <- subset(data.ti, Target.Industry == "BRIDGES")
+data.ti.CITY <- subset(data.ti, Target.Industry == "CITIES TOWNS AND URBAN AREAS")
+data.ti.TACTICAL <- subset(data.ti, Target.Industry == "TACTICAL TARGETS: (UNIDENTIFIED OR NOT LISTED BELOW)")
+
+
+
+data.RR.A20 <- subset(data.ti.RR, Aircraft.Series == "A20")
+data.RR.B17 <- subset(data.ti.RR, Aircraft.Series == "B17")
+data.RR.B24 <- subset(data.ti.RR, Aircraft.Series == "B24")
+data.RR.B25 <- subset(data.ti.RR, Aircraft.Series == "B25")
+data.RR.B26 <- subset(data.ti.RR, Aircraft.Series == "B26")
+data.AIR.A20 <- subset(data.ti.AIR, Aircraft.Series == "A20")
+data.AIR.B17 <- subset(data.ti.AIR, Aircraft.Series == "B17")
+data.AIR.B24 <- subset(data.ti.AIR, Aircraft.Series == "B24")
+data.AIR.B25 <- subset(data.ti.AIR, Aircraft.Series == "B25")
+data.AIR.B26 <- subset(data.ti.AIR, Aircraft.Series == "B26")
+data.BRIDGES.A20 <- subset(data.ti.BRIDGES, Aircraft.Series == "A20")
+data.BRIDGES.B17 <- subset(data.ti.BRIDGES, Aircraft.Series == "B17")
+data.BRIDGES.B24 <- subset(data.ti.BRIDGES, Aircraft.Series == "B24")
+data.BRIDGES.B25 <- subset(data.ti.BRIDGES, Aircraft.Series == "B25")
+data.BRIDGES.B26 <- subset(data.ti.BRIDGES, Aircraft.Series == "B26")
+data.CITY.A20 <- subset(data.ti.CITY, Aircraft.Series == "A20")
+data.CITY.B17 <- subset(data.ti.CITY, Aircraft.Series == "B17")
+data.CITY.B24 <- subset(data.ti.CITY, Aircraft.Series == "B24")
+data.CITY.B25 <- subset(data.ti.CITY, Aircraft.Series == "B25")
+data.CITY.B26 <- subset(data.ti.CITY, Aircraft.Series == "B26")
+data.TACTICAL.A20 <- subset(data.ti.TACTICAL, Aircraft.Series == "A20")
+data.TACTICAL.B17 <- subset(data.ti.TACTICAL, Aircraft.Series == "B17")
+data.TACTICAL.B24 <- subset(data.ti.TACTICAL, Aircraft.Series == "B24")
+data.TACTICAL.B25 <- subset(data.ti.TACTICAL, Aircraft.Series == "B25")
+data.TACTICAL.B26 <- subset(data.ti.TACTICAL, Aircraft.Series == "B26")
+
+
+# ---------------------------------------------------------------------------
+# Create data frame
+
+airborne.aircraft <- c(mean(data.RR.A20$Airborne.Aircraft),
+              mean(data.RR.B17$Airborne.Aircraft),
+              mean(data.RR.B24$Airborne.Aircraft),
+              mean(data.RR.B25$Airborne.Aircraft),
+              mean(data.RR.B26$Airborne.Aircraft),
+              mean(data.AIR.A20$Airborne.Aircraft),
+              mean(data.AIR.B17$Airborne.Aircraft),
+              mean(data.AIR.B24$Airborne.Aircraft),
+              mean(data.AIR.B25$Airborne.Aircraft),
+              mean(data.AIR.B26$Airborne.Aircraft),
+              mean(data.BRIDGES.A20$Airborne.Aircraft),
+              mean(data.BRIDGES.B17$Airborne.Aircraft),
+              mean(data.BRIDGES.B24$Airborne.Aircraft),
+              mean(data.BRIDGES.B25$Airborne.Aircraft),
+              mean(data.BRIDGES.B26$Airborne.Aircraft),
+              mean(data.CITY.A20$Airborne.Aircraft),
+              mean(data.CITY.B17$Airborne.Aircraft),
+              mean(data.CITY.B24$Airborne.Aircraft),
+              mean(data.CITY.B25$Airborne.Aircraft),
+              mean(data.CITY.B26$Airborne.Aircraft),
+              mean(data.TACTICAL.A20$Airborne.Aircraft),
+              mean(data.TACTICAL.B17$Airborne.Aircraft),
+              mean(data.TACTICAL.B24$Airborne.Aircraft),
+              mean(data.TACTICAL.B25$Airborne.Aircraft),
+              mean(data.TACTICAL.B26$Airborne.Aircraft))
+
+target.industry <- c(rep("Railroads", 5), rep("Airfields", 5), rep("Bridges", 5),
+                     rep("Cities", 5), rep("Tactical Target", 5))
+
+aircraft.series <- rep(c("A20", "B17", "B24", "B25", "B26"), 5)
+
+airborne.data <- data.frame(target.industry, aircraft.series, airborne.aircraft)
+
+# ----------------------------------------------------------------------------
+# Plot the graph
+
+ggplot(airborne.data, aes(fill = aircraft.series, y = airborne.aircraft, x = target.industry)) + 
+  geom_bar(position = "dodge", stat = "identity", color = "black") +
+  labs(title = "AVERAGE NUMBER OF AIRCRAFT ON MISSION",
+       x = "TARGET INDUSTRY",
+       y = "AVERAGE NUMBER OF AIRCRAFT",
+       fill = "AIRCRAFT SERIES") +
+  theme(text=element_text(size=16,  family = "Oswald"))
+
+
+
+#############################################################################
+#################### GROUPED BOX PLOT FOR ALTITUDE ##########################
+#############################################################################
+
+
+# -----------------------------------------------------------------------------
+# Clean the data
+# Create data set variables
+
+
+data.ti <- subset(operations,
+                  Altitude.Hundreds.of.Feet != "" & 
+                    Altitude.Hundreds.of.Feet < 400 &
+                    Altitude.Hundreds.of.Feet > 0)
+data.ti.RR <- subset(data.ti, Target.Industry == '"RR INSTALLATIONS,  TRACKS,  MARSHALLING YARDS,  AND STATIONS"')
+data.ti.AIR <- subset(data.ti, Target.Industry == "AIR FIELDS AND AIRDROMES")
+data.ti.BRIDGES <- subset(data.ti, Target.Industry == "BRIDGES")
+data.ti.CITY <- subset(data.ti, Target.Industry == "CITIES TOWNS AND URBAN AREAS")
+data.ti.TACTICAL <- subset(data.ti, Target.Industry == "TACTICAL TARGETS: (UNIDENTIFIED OR NOT LISTED BELOW)")
+
+
+
+data.RR.A20 <- subset(data.ti.RR, Aircraft.Series == "A20")
+data.RR.B17 <- subset(data.ti.RR, Aircraft.Series == "B17")
+data.RR.B24 <- subset(data.ti.RR, Aircraft.Series == "B24")
+data.RR.B25 <- subset(data.ti.RR, Aircraft.Series == "B25")
+data.RR.B26 <- subset(data.ti.RR, Aircraft.Series == "B26")
+data.AIR.A20 <- subset(data.ti.AIR, Aircraft.Series == "A20")
+data.AIR.B17 <- subset(data.ti.AIR, Aircraft.Series == "B17")
+data.AIR.B24 <- subset(data.ti.AIR, Aircraft.Series == "B24")
+data.AIR.B25 <- subset(data.ti.AIR, Aircraft.Series == "B25")
+data.AIR.B26 <- subset(data.ti.AIR, Aircraft.Series == "B26")
+data.BRIDGES.A20 <- subset(data.ti.BRIDGES, Aircraft.Series == "A20")
+data.BRIDGES.B17 <- subset(data.ti.BRIDGES, Aircraft.Series == "B17")
+data.BRIDGES.B24 <- subset(data.ti.BRIDGES, Aircraft.Series == "B24")
+data.BRIDGES.B25 <- subset(data.ti.BRIDGES, Aircraft.Series == "B25")
+data.BRIDGES.B26 <- subset(data.ti.BRIDGES, Aircraft.Series == "B26")
+data.CITY.A20 <- subset(data.ti.CITY, Aircraft.Series == "A20")
+data.CITY.B17 <- subset(data.ti.CITY, Aircraft.Series == "B17")
+data.CITY.B24 <- subset(data.ti.CITY, Aircraft.Series == "B24")
+data.CITY.B25 <- subset(data.ti.CITY, Aircraft.Series == "B25")
+data.CITY.B26 <- subset(data.ti.CITY, Aircraft.Series == "B26")
+data.TACTICAL.A20 <- subset(data.ti.TACTICAL, Aircraft.Series == "A20")
+data.TACTICAL.B17 <- subset(data.ti.TACTICAL, Aircraft.Series == "B17")
+data.TACTICAL.B24 <- subset(data.ti.TACTICAL, Aircraft.Series == "B24")
+data.TACTICAL.B25 <- subset(data.ti.TACTICAL, Aircraft.Series == "B25")
+data.TACTICAL.B26 <- subset(data.ti.TACTICAL, Aircraft.Series == "B26")
+
+
+
+
+# ----------------------------------------------------------------------------
+# Create data frame
+
+altitude.box <- c(data.RR.A20$Altitude.Hundreds.of.Feet,
+                  data.RR.B17$Altitude.Hundreds.of.Feet,
+                  data.RR.B24$Altitude.Hundreds.of.Feet,
+                  data.RR.B25$Altitude.Hundreds.of.Feet,
+                  data.RR.B26$Altitude.Hundreds.of.Feet,
+                  data.AIR.A20$Altitude.Hundreds.of.Feet,
+                  data.AIR.B17$Altitude.Hundreds.of.Feet,
+                  data.AIR.B24$Altitude.Hundreds.of.Feet,
+                  data.AIR.B25$Altitude.Hundreds.of.Feet,
+                  data.AIR.B26$Altitude.Hundreds.of.Feet,
+                  data.BRIDGES.A20$Altitude.Hundreds.of.Feet,
+                  data.BRIDGES.B17$Altitude.Hundreds.of.Feet,
+                  data.BRIDGES.B24$Altitude.Hundreds.of.Feet,
+                  data.BRIDGES.B25$Altitude.Hundreds.of.Feet,
+                  data.BRIDGES.B26$Altitude.Hundreds.of.Feet,
+                  data.CITY.A20$Altitude.Hundreds.of.Feet,
+                  data.CITY.B17$Altitude.Hundreds.of.Feet,
+                  data.CITY.B24$Altitude.Hundreds.of.Feet,
+                  data.CITY.B25$Altitude.Hundreds.of.Feet,
+                  data.CITY.B26$Altitude.Hundreds.of.Feet,
+                  data.TACTICAL.A20$Altitude.Hundreds.of.Feet,
+                  data.TACTICAL.B17$Altitude.Hundreds.of.Feet,
+                  data.TACTICAL.B24$Altitude.Hundreds.of.Feet,
+                  data.TACTICAL.B25$Altitude.Hundreds.of.Feet,
+                  data.TACTICAL.B26$Altitude.Hundreds.of.Feet)
+
+target.industry.box <- c(rep("Railroads", nrow(data.RR.A20) + 
+                               nrow(data.RR.B17) + 
+                               nrow(data.RR.B24) + 
+                               nrow(data.RR.B25) + 
+                               nrow(data.RR.B26)), 
+                         rep("Airfields", nrow(data.AIR.A20) +
+                               nrow(data.AIR.B17) +
+                               nrow(data.AIR.B24) +
+                               nrow(data.AIR.B25) +
+                               nrow(data.AIR.B26)), 
+                         rep("Bridges", nrow(data.BRIDGES.A20) +
+                               nrow(data.BRIDGES.B17) +
+                               nrow(data.BRIDGES.B24) +
+                               nrow(data.BRIDGES.B25) +
+                               nrow(data.BRIDGES.B26)), 
+                         rep("Cities", nrow(data.CITY.A20) +
+                               nrow(data.CITY.B17) +
+                               nrow(data.CITY.B24) +
+                               nrow(data.CITY.B25) +
+                               nrow(data.CITY.B26)), 
+                         rep("Tactical Target", nrow(data.TACTICAL.A20) +
+                               nrow(data.TACTICAL.B17) +
+                               nrow(data.TACTICAL.B24) +
+                               nrow(data.TACTICAL.B25) +
+                               nrow(data.TACTICAL.B26)))
+
+aircraft.series.box <- c(rep("A20", nrow(data.RR.A20)),
+                         rep("B17", nrow(data.RR.B17)),
+                         rep("B24", nrow(data.RR.B24)),
+                         rep("B25", nrow(data.RR.B25)),
+                         rep("B26", nrow(data.RR.B26)),
+                         rep("A20", nrow(data.AIR.A20)),
+                         rep("B17", nrow(data.AIR.B17)),
+                         rep("B24", nrow(data.AIR.B24)),
+                         rep("B25", nrow(data.AIR.B25)),
+                         rep("B26", nrow(data.AIR.B26)),
+                         rep("A20", nrow(data.BRIDGES.A20)),
+                         rep("B17", nrow(data.BRIDGES.B17)),
+                         rep("B24", nrow(data.BRIDGES.B24)),
+                         rep("B25", nrow(data.BRIDGES.B25)),
+                         rep("B26", nrow(data.BRIDGES.B26)),
+                         rep("A20", nrow(data.CITY.A20)),
+                         rep("B17", nrow(data.CITY.B17)),
+                         rep("B24", nrow(data.CITY.B24)),
+                         rep("B25", nrow(data.CITY.B25)),
+                         rep("B26", nrow(data.CITY.B26)),
+                         rep("A20", nrow(data.TACTICAL.A20)),
+                         rep("B17", nrow(data.TACTICAL.B17)),
+                         rep("B24", nrow(data.TACTICAL.B24)),
+                         rep("B25", nrow(data.TACTICAL.B25)),
+                         rep("B26", nrow(data.TACTICAL.B26)))
+
+alt.data.box <- data.frame(target.industry.box, aircraft.series.box, altitude.box)
+
+
+# ----------------------------------------------------------------------------
+# Plot the graph
+
+ggplot(alt.data.box, aes(x = target.industry.box, y = altitude.box, fill = aircraft.series.box)) + 
+  geom_boxplot() +
+  labs(title = "AVERAGE BOMBING ALTITUDE",
+       x = "TARGET INDUSTRY",
+       y = "AVERAGE ALTITUDE (HUNDREDS OF FEET)",
+       fill = "AIRCRAFT SERIES") +
+  theme(text=element_text(size=16,  family = "Oswald"))
+
+
+
+##############################################################################
+######################## CIVILIAN BOMBINGS BAR PLOT ##########################
+##############################################################################
+
+
+# ----------------------------------------------------------------------------
+# CITY AREA, TOWN, TOWN AREA, URBAN AREA, and VILLAGE were all likely civilian 
+# targets.
+# FIRST, narrow down to top 50 Target Types
+# "tt" stands for "Target.Type"
+
+
+# Make a table of Target Type frequencies
+
+table.tt <- table(operations$Target.Type)
+table.top.50.tt <- data.frame(table.tt[which(table.tt >= 372)])
+View(table.top.50.tt)
+
+
+       # for loop method
+       # data.top.50.tt <- operations
+       # for (i in c(1:50)) {
+       #   data.top.50.tt <- subset(operations, Target.Type == table.top.50.tt[i])
+       # }
+
+
+# Subset the dataframe to include only the top 50 Target Types
+
+# inefficient method
+data.top.50.tt <- subset(operations,
+                           Target.Type == table.top.50.tt$Var1[2] |
+                           Target.Type == table.top.50.tt$Var1[3] |
+                           Target.Type == table.top.50.tt$Var1[4] |
+                           Target.Type == table.top.50.tt$Var1[5] |
+                           Target.Type == table.top.50.tt$Var1[6] |
+                           Target.Type == table.top.50.tt$Var1[7] |
+                           Target.Type == table.top.50.tt$Var1[8] |
+                           Target.Type == table.top.50.tt$Var1[9] |
+                           Target.Type == table.top.50.tt$Var1[10] |
+                           Target.Type == table.top.50.tt$Var1[11] |
+                           Target.Type == table.top.50.tt$Var1[12] |
+                           Target.Type == table.top.50.tt$Var1[13] |
+                           Target.Type == table.top.50.tt$Var1[14] |
+                           Target.Type == table.top.50.tt$Var1[15] |
+                           Target.Type == table.top.50.tt$Var1[16] |
+                           Target.Type == table.top.50.tt$Var1[17] |
+                           Target.Type == table.top.50.tt$Var1[18] |
+                           Target.Type == table.top.50.tt$Var1[19] |
+                           Target.Type == table.top.50.tt$Var1[20] |
+                           Target.Type == table.top.50.tt$Var1[21] |
+                           Target.Type == table.top.50.tt$Var1[22] |
+                           Target.Type == table.top.50.tt$Var1[23] |
+                           Target.Type == table.top.50.tt$Var1[24] |
+                           Target.Type == table.top.50.tt$Var1[25] |
+                           Target.Type == table.top.50.tt$Var1[26] |
+                           Target.Type == table.top.50.tt$Var1[27] |
+                           Target.Type == table.top.50.tt$Var1[28] |
+                           Target.Type == table.top.50.tt$Var1[29] |
+                           Target.Type == table.top.50.tt$Var1[30] |
+                           Target.Type == table.top.50.tt$Var1[31] |
+                           Target.Type == table.top.50.tt$Var1[32] |
+                           Target.Type == table.top.50.tt$Var1[33] |
+                           Target.Type == table.top.50.tt$Var1[34] |
+                           Target.Type == table.top.50.tt$Var1[35] |
+                           Target.Type == table.top.50.tt$Var1[36] |
+                           Target.Type == table.top.50.tt$Var1[37] |
+                           Target.Type == table.top.50.tt$Var1[38] |
+                           Target.Type == table.top.50.tt$Var1[39] |
+                           Target.Type == table.top.50.tt$Var1[40] |
+                           Target.Type == table.top.50.tt$Var1[41] |
+                           Target.Type == table.top.50.tt$Var1[42] |
+                           Target.Type == table.top.50.tt$Var1[43] |
+                           Target.Type == table.top.50.tt$Var1[44] |
+                           Target.Type == table.top.50.tt$Var1[45] |
+                           Target.Type == table.top.50.tt$Var1[46] |
+                           Target.Type == table.top.50.tt$Var1[47] |
+                           Target.Type == table.top.50.tt$Var1[48] |
+                           Target.Type == table.top.50.tt$Var1[49] |
+                           Target.Type == table.top.50.tt$Var1[52] |
+                           Target.Type == table.top.50.tt$Var1[53])
+
+
+# -----------------------------------------------------------------------------
+
+# NEXT, determine which Target Types were most frequently attacked by each country
+# Which country had the greatest proportion of civilian bombings?
+
+# Subset data.top.50.tt into each of the four countries (exclude South Africa, which
+# has negligible bombings)
+data.top.50.tt.USA <- subset(data.top.50.tt, Country == "USA")
+data.top.50.tt.GB <- subset(data.top.50.tt, Country == "GREAT BRITAIN")
+data.top.50.tt.NZ <- subset(data.top.50.tt, Country == "NEW ZEALAND")
+data.top.50.tt.SA <- subset(data.top.50.tt, Country == "SOUTH AFRICA")
+data.top.50.tt.AUS <- subset(data.top.50.tt, Country == "AUSTRALIA")
+
+# How many bombings did each country execute at the top 50 target types?
+num.bomb.top.50.USA <- nrow(data.top.50.tt.USA)
+num.bomb.top.50.GB <- nrow(data.top.50.tt.GB)
+num.bomb.top.50.NZ <- nrow(data.top.50.tt.NZ)
+num.bomb.top.50.SA <- nrow(data.top.50.tt.SA)
+num.bomb.top.50.AUS <- nrow(data.top.50.tt.AUS)
+
+
+# -----------------------------------------------------------------------------
+# What percent of USA bombing targets were civilian areas?
+
+data.top.50.tt.USA.civilian <- subset(data.top.50.tt.USA, Target.Type == "CITY AREA" |
+                           Target.Type == "TOWN" |
+                           Target.Type == "TOWN AREA" |
+                           Target.Type == "URBAN AREA" |
+                           Target.Type == "VILLAGE")
+
+civ.perc.USA <- nrow(data.top.50.tt.USA.civilian) / nrow(data.top.50.tt.USA)
+# 11.64931% of USA bombings were civilian targets
+
+# -----------------------------------------------------------------------------
+# What percent of Great Britain bombing targets were civilian areas?
+
+data.top.50.tt.GB.civilian <- subset(data.top.50.tt.GB, Target.Type == "CITY AREA" |
+                                        Target.Type == "TOWN" |
+                                        Target.Type == "TOWN AREA" |
+                                        Target.Type == "URBAN AREA" |
+                                        Target.Type == "VILLAGE")
+
+civ.perc.GB <- nrow(data.top.50.tt.GB.civilian) / nrow(data.top.50.tt.GB)
+# 60.07391% of Great Britain bombings were civilian targets
+
+GB.40 <- subset(data.top.50.tt.GB.civilian, Year < 1942)
+GB.42 <- subset(data.top.50.tt.GB.civilian, Year >= 1942)
+GB.perc.42 <- nrow(GB.42) / nrow(data.top.50.tt.GB.civilian)
+
+# -----------------------------------------------------------------------------
+# What percent of New Zealand bombing targets were civilian areas?
+
+data.top.50.tt.NZ.civilian <- subset(data.top.50.tt.NZ, Target.Type == "CITY AREA" |
+                                       Target.Type == "TOWN" |
+                                       Target.Type == "TOWN AREA" |
+                                       Target.Type == "URBAN AREA" |
+                                       Target.Type == "VILLAGE")
+
+civ.perc.NZ <- nrow(data.top.50.tt.NZ.civilian) / nrow(data.top.50.tt.NZ)
+# 0.6097561% of New Zealand bombings were civilian targets
+
+# -----------------------------------------------------------------------------
+# What percent of Australia bombing targets were civilian areas?
+
+data.top.50.tt.AUS.civilian <- subset(data.top.50.tt.AUS, Target.Type == "CITY AREA" |
+                                       Target.Type == "TOWN" |
+                                       Target.Type == "TOWN AREA" |
+                                       Target.Type == "URBAN AREA" |
+                                       Target.Type == "VILLAGE")
+
+civ.perc.AUS <- nrow(data.top.50.tt.AUS.civilian) / nrow(data.top.50.tt.AUS)
+# 18.18182% of Australia bombings were civilian targets
+
+
+
+
+# -----------------------------------------------------------------------------
+# Create bar plot of each country's proportion of civilian bombings
+
+countries <- c("USA", "GREAT BRITAIN", "NEW ZEALAND", "AUSTRALIA")
+ethics.scores <- c(civ.perc.USA, civ.perc.GB, civ.perc.NZ, civ.perc.AUS)
+data.ethics <- data.frame(Country = countries, Score = ethics.scores)
+data.ethics <- transform(data.ethics, 
+                         Country = reorder(Country, Score))
+
+
+# ----------------------------------------------------------------------------
+# Plot the graph
+
+ggplot(data.ethics, aes(x = Country, y = Score, fill = Score)) + 
+  geom_bar(stat = "identity", color = "black") +
+  labs(x = "BOMBING COUNTRY",
+       y = "PERCENT TARGETING CIVILIANS", 
+       fill = "PERCENT",
+       title = "PROPORTION OF BOMBINGS TARGETING CIVILIANS") +
+  scale_fill_gradient(low = "red", high = "red4", limits = c(0, 1), labels = percent) +
+  scale_y_continuous(labels = scales::percent, limits = c(0, 1)) +
+  geom_text(aes(label = scales::percent(Score)), vjust = -1) +
+  theme(text=element_text(size=16,  family = "Oswald")) 
+
+
+##############################################################################
+###################### PIE CHART OF TARGET INDUSTRIES ########################
+##############################################################################
+
+
+# ----------------------------------------------------------------------------
+# Not any data for target industry from Australia, New Zealand, South Africa
+# Make two charts, one for Great Britain, one for USA
+
+
+# Identify the top 5 target industries
+table.ti <- table(operations$Target.Industry)
+table.top.5.ti <- data.frame(table.ti[which(table.ti >= 5000)])
+View(table.top.5.ti)
+
+
+# ----------------------------------------------------------------------------
+# Create Data sets for the pie
+
+
+data.pie <- subset(operations, Target.Industry != "" &
+                   Target.Industry != "UNIDENTIFIED TARGETS")
+pie.GB <- subset(data.pie, Country == "GREAT BRITAIN")
+perc.pie.GB <- nrow(pie.GB)
+
+pie.USA <- subset(data.pie, Country == "USA")
+perc.pie.USA <- nrow(pie.USA)
+
+pie.GB.RR <- subset(pie.GB, Target.Industry == '"RR INSTALLATIONS,  TRACKS,  MARSHALLING YARDS,  AND STATIONS"')
+pie.GB.AIR <- subset(pie.GB, Target.Industry == "AIR FIELDS AND AIRDROMES")
+pie.GB.BRIDGES <- subset(pie.GB, Target.Industry == "BRIDGES")
+pie.GB.CITY <- subset(pie.GB, Target.Industry == "CITIES TOWNS AND URBAN AREAS")
+pie.GB.TACTICAL <- subset(pie.GB, Target.Industry == "TACTICAL TARGETS: (UNIDENTIFIED OR NOT LISTED BELOW)")
+pie.GB.OTHER <- subset(pie.GB, Target.Industry != '"RR INSTALLATIONS,  TRACKS,  MARSHALLING YARDS,  AND STATIONS"' &
+                         Target.Industry != "AIR FIELDS AND AIRDROMES" &
+                         Target.Industry != "BRIDGES" &
+                         Target.Industry != "CITIES TOWNS AND URBAN AREAS" &
+                         Target.Industry != "TACTICAL TARGETS: (UNIDENTIFIED OR NOT LISTED BELOW)")
+
+GB.RR <- nrow(pie.GB.RR)
+GB.AIR <- nrow(pie.GB.AIR)
+GB.BRIDGES <- nrow(pie.GB.BRIDGES)
+GB.CITY <- nrow(pie.GB.CITY)
+GB.TACTICAL <- nrow(pie.GB.TACTICAL)
+GB.OTHER <- nrow(pie.GB.OTHER)
+
+pie.USA.RR <- subset(pie.USA, Target.Industry == '"RR INSTALLATIONS,  TRACKS,  MARSHALLING YARDS,  AND STATIONS"')
+pie.USA.AIR <- subset(pie.USA, Target.Industry == "AIR FIELDS AND AIRDROMES")
+pie.USA.BRIDGES <- subset(pie.USA, Target.Industry == "BRIDGES")
+pie.USA.CITY <- subset(pie.USA, Target.Industry == "CITIES TOWNS AND URBAN AREAS")
+pie.USA.TACTICAL <- subset(pie.USA, Target.Industry == "TACTICAL TARGETS: (UNIDENTIFIED OR NOT LISTED BELOW)")
+pie.USA.OTHER <- subset(pie.USA, Target.Industry != '"RR INSTALLATIONS,  TRACKS,  MARSHALLING YARDS,  AND STATIONS"' &
+                          Target.Industry != "AIR FIELDS AND AIRDROMES" &
+                          Target.Industry != "BRIDGES" &
+                          Target.Industry != "CITIES TOWNS AND URBAN AREAS" &
+                          Target.Industry != "TACTICAL TARGETS: (UNIDENTIFIED OR NOT LISTED BELOW)")
+
+USA.RR <- nrow(pie.USA.RR)
+USA.AIR <- nrow(pie.USA.AIR)
+USA.BRIDGES <- nrow(pie.USA.BRIDGES)
+USA.CITY <- nrow(pie.USA.CITY)
+USA.TACTICAL <- nrow(pie.USA.TACTICAL)
+USA.OTHER <- nrow(pie.USA.OTHER)
+
+
+# ----------------------------------------------------------------------------
+# Make the data frame for the pie!
+
+prop.pie <- c(USA.RR, USA.AIR, USA.BRIDGES, USA.CITY, USA.TACTICAL, USA.OTHER,
+              GB.RR, GB.AIR, GB.BRIDGES, GB.CITY, GB.TACTICAL, GB.OTHER)
+country.pie <- factor(c(rep("USA", 6), rep("GREAT BRITAIN", 6)))
+industry.pie <- factor(rep(c("Railroads", "Airfields", "Bridges", "Cities", 
+                        "Tactical Target", "Other"), 2))
+pie.data <- data.frame(country.pie, industry.pie, prop.pie)
+
+
+# ----------------------------------------------------------------------------
+# Plot the pie!
+
+ggplot(data = pie.data, aes(fill = industry.pie, y = prop.pie, x = factor(1))) + 
+  geom_bar(stat = "identity", position = position_fill(), color = "black") +
+  theme(text=element_text(size=16,  family = "Oswald")) +
+  # optional labels: geom_text(aes(label = prop.pie), position = position_fill(vjust = 0.5)) +
+  labs(title = "PROPORTION OF INDUSTRIES TARGETED BY U.S.A. AND GREAT BRITAIN",
+       fill = "TARGET INDUSTRY",
+       x = "",
+       y = "") +
+  facet_wrap(~country.pie) +
+  coord_polar(theta = "y") 
+
+
+# What percent of GB's bombings were on civilians using this method?
+GB.CITY / (GB.RR + GB.AIR + GB.BRIDGES + GB.TACTICAL + GB.OTHER)
+# 76.97%
+
+# What percent of U.S.A.'s?
+USA.CITY / (USA.RR + USA.AIR + USA.BRIDGES + USA.TACTICAL + USA.OTHER)
+# 11.08%
+
+#############################################################################
+############# MAPPING AIRBASES IN EUROPE, AFRICA, AND ASIA ##################
+#############################################################################
+
+# --------------------------------------------------------------------------
+# Create Data Sets
+# Map all of the airbases, color coded for each country
+
+# USA
+data.USA <- subset(operations, Country == "USA")
+data.USA <- subset(data.USA, Takeoff.Latitude != "")
+USA.bases <- data.frame(cbind(as.numeric(unique(data.USA$Takeoff.Longitude)), 
+                              as.numeric(unique(data.USA$Takeoff.Latitude))))
+colnames(USA.bases) <- c("Longitude", "Latitude")
+
+
+# Great Britain
+data.GB <- subset(operations, Country == "GREAT BRITAIN")
+GB.bases <- data.frame(cbind(as.numeric(unique(data.GB$Takeoff.Longitude)), 
+                             as.numeric(unique(data.GB$Takeoff.Latitude))))
+colnames(GB.bases) <- c("Longitude", "Latitude")
+
+
+# Australia has no recorded longitudes/latitudes
+
+
+# New Zealand
+data.NZ <- subset(operations, Country == "NEW ZEALAND")
+data.NZ <- subset(data.NZ, Takeoff.Longitude != "")
+NZ.bases <- data.frame(cbind(as.numeric(unique(data.NZ$Takeoff.Longitude)), 
+                              as.numeric(unique(data.NZ$Takeoff.Latitude))))
+colnames(NZ.bases) <- c("Longitude", "Latitude")
+
+
+# South Africa
+data.SA <- subset(operations, Country == "SOUTH AFRICA")
+data.SA <- subset(data.SA, Takeoff.Longitude != "")
+SA.bases <- data.frame(cbind(as.numeric(unique(data.SA$Takeoff.Longitude)), 
+                             as.numeric(unique(data.SA$Takeoff.Latitude))))
+colnames(SA.bases) <- c("Longitude", "Latitude")
+
+
+# ---------------------------------------------------------------------------
+# Satellite Map
+
+
+m <- leaflet()
+m <- addTiles(m)
+m <- addProviderTiles(m, "Esri.WorldImagery")
+m <- addCircles(m, data = USA.bases, lat = USA.bases$Latitude, 
+                USA.bases$Longitude, radius = 100000,
+                color = "red", opacity = 0, fillOpacity = 0.7)
+m <- addCircles(m, data = NZ.bases, lat = NZ.bases$Latitude, 
+                NZ.bases$Longitude, radius = 100000,
+                color = "purple", opacity = 0, fillOpacity = 1)
+m <- addCircles(m, data = SA.bases, lat = SA.bases$Latitude, 
+                SA.bases$Longitude, radius = 100000,
+                color = "black", opacity = 0, fillOpacity = 1)
+m <- addCircles(m, data = GB.bases, lat = GB.bases$Latitude, 
+                GB.bases$Longitude, radius = 100000,
+                color = "yellow", opacity = 0, fillOpacity = 0.7)
+m <- addLegend(m, position = "bottomright", 
+               colors = c("red", "yellow", "purple"), 
+               opacity = 1,
+               labels = c("U.S.A", "Great Britain", "New Zealand"))
+m
+
+
+
+##############################################################################
+######################## MAPPING TARGETS IN FRANCE ###########################
+##############################################################################
+
+# ----------------------------------------------------------------------------
+# Create Data sets
+
+
+data.FRAN.target <- subset(operations, Target.Country == "FRANCE")
+data.FRAN.target <- subset(data.FRAN.target, Target.Latitude != "")
+data.FRAN.target <- subset(data.FRAN.target, Target.Longitude != "")
+
+
+data.FRAN.target.40 <- subset(data.FRAN.target, Year == 1940)
+FRAN.target.40 <- data.frame(cbind(as.numeric(data.FRAN.target.40$Target.Longitude), 
+                                   as.numeric(data.FRAN.target.40$Target.Latitude)))
+colnames(FRAN.target.40) <- c("Longitude", "Latitude")
+FRAN.target.40$Longitude <- jitter(FRAN.target.40$Longitude, factor = 0.4)
+FRAN.target.40$Latitude <- jitter(FRAN.target.40$Latitude, factor = 30)
+
+
+data.FRAN.target.41 <- subset(data.FRAN.target, Year == 1941)
+FRAN.target.41 <- data.frame(cbind(as.numeric(data.FRAN.target.41$Target.Longitude), 
+                                   as.numeric(data.FRAN.target.41$Target.Latitude)))
+colnames(FRAN.target.41) <- c("Longitude", "Latitude")
+FRAN.target.41$Longitude <- jitter(FRAN.target.41$Longitude, factor = 0.4)
+FRAN.target.41$Latitude <- jitter(FRAN.target.41$Latitude, factor = 30)
+
+
+data.FRAN.target.42 <- subset(data.FRAN.target, Year == 1942)
+FRAN.target.42 <- data.frame(cbind(as.numeric(data.FRAN.target.42$Target.Longitude), 
+                                   as.numeric(data.FRAN.target.42$Target.Latitude)))
+colnames(FRAN.target.42) <- c("Longitude", "Latitude")
+FRAN.target.42$Longitude <- jitter(FRAN.target.42$Longitude, factor = 0.4)
+FRAN.target.42$Latitude <- jitter(FRAN.target.42$Latitude, factor = 30)
+
+
+
+data.FRAN.target.43 <- subset(data.FRAN.target, Year == 1943)
+FRAN.target.43 <- data.frame(cbind(as.numeric(data.FRAN.target.43$Target.Longitude), 
+                                   as.numeric(data.FRAN.target.43$Target.Latitude)))
+colnames(FRAN.target.43) <- c("Longitude", "Latitude")
+FRAN.target.43$Longitude <- jitter(FRAN.target.43$Longitude, factor = 0.4)
+FRAN.target.43$Latitude <- jitter(FRAN.target.43$Latitude, factor = 30)
+
+
+
+data.FRAN.target.44 <- subset(data.FRAN.target, Year == 1944)
+FRAN.target.44 <- data.frame(cbind(as.numeric(data.FRAN.target.44$Target.Longitude), 
+                                   as.numeric(data.FRAN.target.44$Target.Latitude)))
+colnames(FRAN.target.44) <- c("Longitude", "Latitude")
+FRAN.target.44$Longitude <- jitter(FRAN.target.44$Longitude, factor = 0.4)
+FRAN.target.44$Latitude <- jitter(FRAN.target.44$Latitude, factor = 30)
+
+
+data.FRAN.target.45 <- subset(data.FRAN.target, Year == 1945)
+FRAN.target.45 <- data.frame(cbind(as.numeric(data.FRAN.target.45$Target.Longitude), 
+                                   as.numeric(data.FRAN.target.45$Target.Latitude)))
+colnames(FRAN.target.45) <- c("Longitude", "Latitude")
+FRAN.target.45$Longitude <- jitter(FRAN.target.45$Longitude, factor = 0.4)
+FRAN.target.45$Latitude <- jitter(FRAN.target.45$Latitude, factor = 30)
+
+
+
+# --------------------------------------------------------------------------
+# Satellite Map
+
+
+m <- leaflet()
+m <- addTiles(m)
+m <- addProviderTiles(m, "Esri.WorldImagery")
+m <- addCircles(m, data = FRAN.target.40, lat = FRAN.target.40$Latitude, 
+                FRAN.target.40$Longitude, radius = 1800,
+                color = "white", opacity = 0, fillOpacity = 0.2)
+m <- addCircles(m, data = FRAN.target.41, lat = FRAN.target.41$Latitude, 
+                FRAN.target.41$Longitude, radius = 1800,
+                color = "yellow", opacity = 0, fillOpacity = 0.2)
+m <- addCircles(m, data = FRAN.target.42, lat = FRAN.target.42$Latitude, 
+                FRAN.target.42$Longitude, radius = 1800,
+                color = "orange", opacity = 0, fillOpacity = 0.2)
+m <- addCircles(m, data = FRAN.target.43, lat = FRAN.target.43$Latitude, 
+                FRAN.target.43$Longitude, radius = 1800,
+                color = "red", opacity = 0, fillOpacity = 0.2)
+m <- addCircles(m, data = FRAN.target.44, lat = FRAN.target.44$Latitude, 
+                FRAN.target.44$Longitude, radius = 1800,
+                color = "purple", opacity = 0, fillOpacity = 0.2)
+m <- addCircles(m, data = FRAN.target.45, lat = FRAN.target.45$Latitude, 
+                FRAN.target.45$Longitude, radius = 1800,
+                color = "blue", opacity = 0, fillOpacity = 0.2)
+m <- addLegend(m, position = "bottomright", 
+               colors = c("white", "yellow", "orange", "red", "purple", "blue"), 
+               opacity = 1,
+               labels = c("1940", "1941", "1942", "1943", "1944", "1945"))
+
+m
+
+
+# -----------------------------------------------------------------------
+# Street Map
+
+m <- leaflet()
+m <- addTiles(m)
+m <- addProviderTiles(m, "OpenStreetMap")
+m <- addCircles(m, data = FRAN.target.40, lat = FRAN.target.40$Latitude, 
+                FRAN.target.40$Longitude, radius = 1800,
+                color = "white", opacity = 0, fillOpacity = 0.3)
+m <- addCircles(m, data = FRAN.target.41, lat = FRAN.target.41$Latitude, 
+                FRAN.target.41$Longitude, radius = 1800,
+                color = "yellow", opacity = 0, fillOpacity = 0.3)
+m <- addCircles(m, data = FRAN.target.42, lat = FRAN.target.42$Latitude, 
+                FRAN.target.42$Longitude, radius = 1800,
+                color = "orange", opacity = 0, fillOpacity = 0.3)
+m <- addCircles(m, data = FRAN.target.43, lat = FRAN.target.43$Latitude, 
+                FRAN.target.43$Longitude, radius = 1800,
+                color = "red", opacity = 0, fillOpacity = 0.3)
+m <- addCircles(m, data = FRAN.target.44, lat = FRAN.target.44$Latitude, 
+                FRAN.target.44$Longitude, radius = 1800,
+                color = "purple", opacity = 0, fillOpacity = 0.3)
+m <- addCircles(m, data = FRAN.target.45, lat = FRAN.target.45$Latitude, 
+                FRAN.target.45$Longitude, radius = 1800,
+                color = "blue", opacity = 0, fillOpacity = 0.3)
+m <- addLegend(m, position = "bottomright", 
+               colors = c("white", "yellow", "orange", "red", "purple", "blue"), 
+               opacity = 1,
+               labels = c("1940", "1941", "1942", "1943", "1944", "1945"))
+
+m
+
+
+```
+
+
+
